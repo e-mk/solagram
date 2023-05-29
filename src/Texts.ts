@@ -1,0 +1,1 @@
+export const WELCOME_MESSAGE = "Welcome to Solagram bot. Please provide Solana wallet address to monitor"
