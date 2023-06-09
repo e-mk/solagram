@@ -4,10 +4,12 @@ import { isAccount } from './solHelper';
 import { WELCOME_MESSAGE, PROVIDE_ACCOUNT_MESSAGE, NOT_AN_ACCOUNT_MESSAGE, NO_ACCOUNTS_REGISTERED,
   accountCreatedMessage, accountAlreadyExists } from './Texts';
 
+import helius from './HeliusService'
+
 require('dotenv').config();
 
 const { enter, leave } = Scenes.Stage;
-const ASK_ACCOUNT_SCENE = "askAccountScene"
+const ADD_ACCOUNT_SCENE = "addAccountScene"
 
 class Bot {
   public bot: Telegraf<Scenes.SceneContext<Scenes.SceneSessionData>>
@@ -20,11 +22,11 @@ class Bot {
   }
 
   private initBot (): void {
-    const askAccountScene = new Scenes.BaseScene<Scenes.SceneContext>(ASK_ACCOUNT_SCENE);
+    const askAccountScene = new Scenes.BaseScene<Scenes.SceneContext>(ADD_ACCOUNT_SCENE);
     askAccountScene.enter(ctx => ctx.reply(PROVIDE_ACCOUNT_MESSAGE));
     askAccountScene.leave(ctx => ctx.reply("Done!"));
     askAccountScene.command("back", leave<Scenes.SceneContext>());
-    askAccountScene.on(message('text'), ctx => this.saveAccountToMap(ctx.message.text, ctx));
+    askAccountScene.on(message('text'), ctx => this.processAccountPubKey(ctx.message.text, ctx));
     askAccountScene.on("message", ctx => ctx.reply(NOT_AN_ACCOUNT_MESSAGE));
 
     const stage = new Scenes.Stage<Scenes.SceneContext>([askAccountScene]);
@@ -32,9 +34,9 @@ class Bot {
     this.bot.use(stage.middleware());
 
     this.bot.start((ctx) => this.start(ctx));
-    this.bot.command('addaccount', (ctx) => this.addAccount(ctx))
+    this.bot.command('addaccount', (ctx) => ctx.scene.enter(ADD_ACCOUNT_SCENE))
     this.bot.command('accounts', (ctx) => this.listAccounts(ctx))
-    this.bot.command('deleteaccount', (ctx) => this.addAccount(ctx))
+    this.bot.command('deleteaccount', (ctx) => ctx.reply('Not Implemented'))
 
     this.bot.help((ctx) => ctx.reply('Send me a sticker'));
     this.bot.on(message('sticker'), (ctx) => ctx.reply('👍'));
@@ -51,14 +53,21 @@ class Bot {
     ctx.reply(WELCOME_MESSAGE)
   }
 
-  private addAccount = (ctx) => {
-    const [cmd, param] = (ctx.message.reply_to_message || ctx.message).text.split(' ');
-    console.log(cmd, param);
-    if (!param) {
-      ctx.scene.enter(ASK_ACCOUNT_SCENE)
-    } else {
-      this.saveAccountToMap(param, ctx)
+  private processAccountPubKey(pubKey: string, ctx) {
+    const [accountName, isAdded] = this.saveAccountToMap(pubKey, ctx)
+    if (!pubKey || !accountName) {
+      ctx.reply(NOT_AN_ACCOUNT_MESSAGE);
+      return
     }
+
+    if (isAdded) {
+      helius.createOrUpdateWebhook(Array.from(this.accountMap.keys()))
+      ctx.reply(accountCreatedMessage(pubKey, accountName))
+    } else{
+      ctx.reply(accountAlreadyExists(pubKey, accountName));
+    }
+
+    ctx.scene.leave();
   }
 
   private listAccounts = (ctx) => {
@@ -81,21 +90,17 @@ class Bot {
     } 
   }
 
-  private saveAccountToMap(pubKey: string, ctx) {
+  private saveAccountToMap(pubKey: string, ctx): [string, boolean] {
     if (!isAccount(pubKey)) {
-      ctx.reply(NOT_AN_ACCOUNT_MESSAGE);
-      return
+      return [null, false]
     }
     if (this.accountMap.has(pubKey)) {
       const accountName = this.accountMap.get(pubKey)
-      ctx.reply(accountAlreadyExists(pubKey, accountName));
-      ctx.scene.leave();
-      return
+      return [accountName, false];
     }
-    const name = `Account${++this.accountNumber}`
-    this.accountMap.set(pubKey, name)
-    ctx.reply(accountCreatedMessage(pubKey, name))
-    ctx.scene.leave();
+    const accountName = `Account${++this.accountNumber}`
+    this.accountMap.set(pubKey, accountName)
+    return [accountName, true]
   }
 }
 
