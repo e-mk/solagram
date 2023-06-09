@@ -13,6 +13,7 @@
     "@types/express": "4.17.1",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
+    "helius-sdk": "^1.0.6",
     "nodemon": "^2.0.22",
     "telegraf": "^4.12.3-canary.1",
     "ts-node": "^10.9.1",

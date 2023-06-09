@@ -1,5 +1,6 @@
 import express from './App'
 import bot from './TgBot'
+import HeliusService from './HeliusService'
 
 const port = process.env.PORT || 3000
 const botWebhookPort = process.env.BOT_WH_PORT || 80

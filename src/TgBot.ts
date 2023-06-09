@@ -1,8 +1,9 @@
 import { Telegraf, Scenes, session } from 'telegraf';
 import { message } from 'telegraf/filters';
+import { isAccount } from './solHelper';
 import { WELCOME_MESSAGE, PROVIDE_ACCOUNT_MESSAGE, NOT_AN_ACCOUNT_MESSAGE, NO_ACCOUNTS_REGISTERED,
   accountCreatedMessage, accountAlreadyExists } from './Texts';
-import { isAccount } from './solHelper';
+
 require('dotenv').config();
 
 const { enter, leave } = Scenes.Stage;
@@ -14,7 +15,7 @@ class Bot {
   private accountNumber = 0
 
   constructor () {
-    this.bot = new Telegraf<Scenes.SceneContext>(process.env.BOT_TOKEN);
+    this.bot = new Telegraf<Scenes.SceneContext>(process.env.TG_BOT_TOKEN);
     this.initBot()
   }
 
