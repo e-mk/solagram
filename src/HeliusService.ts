@@ -9,7 +9,7 @@ import {
 
 require('dotenv').config();
 
-const HELIUS_WEBHOOK_URL = process.env.HELIUS_WEBHOOK_URL
+const HELIUS_WEBHOOK_URL = `${process.env.HELIUS_WEBHOOK_URL}/webhook`
 const SOLANA_NETWORK = process.env.SOLANA_NETWORK || "dev"
 
 class HeliusService {
@@ -32,6 +32,7 @@ class HeliusService {
     let webhooks = await this.helius.getAllWebhooks();
     
     console.log(`Create Webhook with account addresses :: ${accountAddresses}`)
+    console.log(`Create Webhook with url :: ${HELIUS_WEBHOOK_URL}`)
     let webhook = webhooks[0]
 
     const webhookType = (SOLANA_NETWORK === 'main') ? WebhookType.ENHANCED : WebhookType.ENHANCED_DEVNET;
@@ -53,6 +54,13 @@ class HeliusService {
     console.log(`Edit Webhook with id ${webhookId}`)
 
     if (webhook) {
+      // deleted all accounts
+      if (accountAddresses.length == 0) {
+        this.helius.deleteWebhook(this.webhookId)
+        console.log(`Deleted webhookID :: ${webhook.webhookID}`)
+        return
+      }
+
       webhook = await this.helius.editWebhook(
         webhook.webhookID,
         {
@@ -60,7 +68,7 @@ class HeliusService {
         transactionTypes: [TransactionType.ANY], 
         webhookURL: HELIUS_WEBHOOK_URL
       }); 
-      console.log(`webhookID :: ${webhook.webhookID}`)
+      console.log(`Edited webhookID :: ${webhook.webhookID}`)
     } else {
       console.log('no webhook to edit')
     }

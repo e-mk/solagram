@@ -1,4 +1,6 @@
 import * as express from 'express'
+import logger from './logger'
+import bot from './TgBotService'
 
 class App {
   public express
@@ -12,17 +14,21 @@ class App {
     this.express.use(express.json());
 
     const router = express.Router()
-    router.post('/', (req, res) => {
+    router.post('/webhook', (req, res) => {
       let accountData = req.body[0].accountData
-      // console.log(`request :: ${JSON.stringify(req.body)}`)
-      console.log(`request :: ${accountData[0].account}`)
+      let description = req.body[0].description
+      logger.debug(`request :: ${JSON.stringify(req.body)}`)
+      // logger.debug(`request :: ${accountData[0].account}`)
     
-      res.send(req.body);
-      console.log('Got webhook!!')
+      bot.sendAccountUpdateMessage(accountData[0].account, description)
+      res.status(200).send();
+      logger.debug('Got webhook!!')
+      // res.send(req.body);
       // res.json({
       //   message: 'Hello World!'
       // })
     })
+    
     this.express.use('/', router)
   }
 }
