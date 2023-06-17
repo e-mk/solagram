@@ -6,8 +6,10 @@ import {
 
   Helius
 } from "helius-sdk";
+import logger from './logger'
 
 require('dotenv').config();
+
 
 const HELIUS_WEBHOOK_URL = `${process.env.HELIUS_WEBHOOK_URL}/webhook`
 const SOLANA_NETWORK = process.env.SOLANA_NETWORK || "dev"
@@ -31,8 +33,8 @@ class HeliusService {
   private async createWebhook(accountAddresses: string[]) {
     let webhooks = await this.helius.getAllWebhooks();
     
-    console.log(`Create Webhook with account addresses :: ${accountAddresses}`)
-    console.log(`Create Webhook with url :: ${HELIUS_WEBHOOK_URL}`)
+    logger.debug(`Create Webhook with account addresses :: ${accountAddresses}`)
+    logger.debug(`Create Webhook with url :: ${HELIUS_WEBHOOK_URL}`)
     let webhook = webhooks[0]
 
     const webhookType = (SOLANA_NETWORK === 'main') ? WebhookType.ENHANCED : WebhookType.ENHANCED_DEVNET;
@@ -46,18 +48,18 @@ class HeliusService {
       }); 
     }
     this.webhookId = webhook.webhookID
-    console.log(`webhookID :: ${webhook.webhookID}`)
+    logger.info(`webhookID :: ${webhook.webhookID}`)
   }
 
   private async editWebhook(webhookId: string, accountAddresses: string[]) {
     let webhook = await this.helius.getWebhookByID(webhookId);
-    console.log(`Edit Webhook with id ${webhookId}`)
+    logger.info(`Edit Webhook with id ${webhookId}`)
 
     if (webhook) {
       // deleted all accounts
       if (accountAddresses.length == 0) {
         this.helius.deleteWebhook(this.webhookId)
-        console.log(`Deleted webhookID :: ${webhook.webhookID}`)
+        logger.info(`Deleted webhookID :: ${webhook.webhookID}`)
         return
       }
 
@@ -68,9 +70,9 @@ class HeliusService {
         transactionTypes: [TransactionType.ANY], 
         webhookURL: HELIUS_WEBHOOK_URL
       }); 
-      console.log(`Edited webhookID :: ${webhook.webhookID}`)
+      logger.info(`Edited webhookID :: ${webhook.webhookID}`)
     } else {
-      console.log('no webhook to edit')
+      logger.info('no webhook to edit')
     }
   }
 }

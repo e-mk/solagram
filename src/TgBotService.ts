@@ -6,6 +6,7 @@ import { WELCOME_MESSAGE, PROVIDE_ACCOUNT_MESSAGE_TO_MONITOR, PROVIDE_ACCOUNT_ME
   accountCreatedMessage, accountDeletedMessage, accountAlreadyExists, accountNotExist } from './Texts';
 
 import helius from './HeliusService'
+import logger from './logger'
 
 require('dotenv').config();
 
@@ -91,7 +92,7 @@ class Bot {
 
         if (isAdded) {
           helius.createOrUpdateWebhook(Array.from(accountMap.keys()))
-          console.log (`chatId = ${ctx.message.chat.id}`)
+          logger.info(`added account for chat with Id: ${ctx.message.chat.id}`)
           ctx.reply(accountCreatedMessage(pubKey, accountName))
         } else {
           ctx.reply(accountAlreadyExists(pubKey, accountName));
@@ -112,7 +113,7 @@ class Bot {
         break; 
       }
       default: { 
-        console.log("Unknown action");
+        logger.debug("Unknown action");
         ctx.scene.leave(); 
         break; 
      }  
@@ -179,7 +180,7 @@ class Bot {
       }
     } 
     if (isMessageSent) {
-      console.log("Update Sent")
+      logger.debug("Update Sent")
     }
   }
 }
