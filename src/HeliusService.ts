@@ -2,14 +2,12 @@ import {
   // enums
   TransactionType,
   WebhookType,
-  Address,
-
   Helius
 } from "helius-sdk";
-import logger from './logger'
+import logger from './logger.js'
 
-require('dotenv').config();
-
+import dotenv from 'dotenv'
+dotenv.config()
 
 const HELIUS_WEBHOOK_URL = `${process.env.HELIUS_WEBHOOK_URL}/webhook`
 const SOLANA_NETWORK = process.env.SOLANA_NETWORK || "dev"

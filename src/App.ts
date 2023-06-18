@@ -1,6 +1,6 @@
-import * as express from 'express'
-import logger from './logger'
-import bot from './TgBotService'
+import express from 'express'
+import logger from './logger.js'
+import bot from './TgBotService.js'
 
 class App {
   public express
@@ -28,7 +28,7 @@ class App {
       //   message: 'Hello World!'
       // })
     })
-    
+
     this.express.use('/', router)
   }
 }

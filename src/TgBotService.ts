@@ -1,14 +1,18 @@
 import { Telegraf, Scenes, session } from 'telegraf';
 import { message } from 'telegraf/filters';
-import { isAccount } from './solHelper';
+
+import { isAccount } from './solHelper.js';
+import helius from './HeliusService.js'
+import logger from './logger.js'
+import db from './AccountDbService.js'
 import { WELCOME_MESSAGE, PROVIDE_ACCOUNT_MESSAGE_TO_MONITOR, PROVIDE_ACCOUNT_MESSAGE_TO_DELETE, 
   NOT_AN_ACCOUNT_MESSAGE, NO_ACCOUNTS_REGISTERED,
-  accountCreatedMessage, accountDeletedMessage, accountAlreadyExists, accountNotExist } from './Texts';
+  accountCreatedMessage, accountDeletedMessage, accountAlreadyExists, accountNotExist } from './Texts.js';
 
-import helius from './HeliusService'
-import logger from './logger'
 
-require('dotenv').config();
+import { ChatAccounts } from './entity.js';
+import dotenv from 'dotenv'
+dotenv.config()
 
 const { enter, leave } = Scenes.Stage;
 const ADD_ACCOUNT_SCENE = "addAccountScene"
@@ -32,7 +36,7 @@ class Bot {
     this.initBot()
   }
 
-  private initBot (): void {
+  private initBot(): void {
     const addAccountScene = new Scenes.BaseScene<Scenes.SceneContext>(ADD_ACCOUNT_SCENE);
     addAccountScene.enter(ctx => ctx.reply(PROVIDE_ACCOUNT_MESSAGE_TO_MONITOR));
     addAccountScene.leave(ctx => ctx.reply("Done!"));

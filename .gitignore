@@ -25,6 +25,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 
+#db
+/db
+
 #other
 package-lock.json
 /.vscode
