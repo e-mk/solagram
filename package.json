@@ -35,5 +35,8 @@
       "db/*",
       "public/javascripts/*.js"
     ]
+  },
+  "engines": {
+    "node": ">=16"
   }
 }
