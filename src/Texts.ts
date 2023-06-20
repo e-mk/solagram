@@ -1,4 +1,4 @@
-export const WELCOME_MESSAGE = "Welcome to Solagram bot. Please provide Solana wallet address to monitor"
+export const WELCOME_MESSAGE = "Welcome to Solagram bot. Please use /addaccount to add Solana account to monitor or /accounts to list existing accounts"
 export const PROVIDE_ACCOUNT_MESSAGE_TO_MONITOR = "Please, provide the account address you want to monitor"
 export const PROVIDE_ACCOUNT_MESSAGE_TO_DELETE = "Please, provide the account address you want to delete"
 export const NOT_AN_ACCOUNT_MESSAGE = "Provided public key is not a Solana account"

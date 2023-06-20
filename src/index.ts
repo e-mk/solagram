@@ -31,8 +31,11 @@ express.listen(port, (err) => {
 //       setTimeout(resolve, ms);
 //     });
 //   }
-//   db.save(chatInfo3) 
+//   db.saveAccount("chatId2", "pubKey1") 
+//   await sleep(1000)
+//   db.deleteAccount("chatId2", "pubKey1") 
 // }
 
-// const chatInfo3: ChatAccounts = {id: "3", accounts: [{pubKey: "444", name: "DDD"}]}
+// const account = {pubKey: "a2a2a2", name: "DDD"}
+// const chatInfo3: ChatAccounts = {id: "3", accounts: [account]}
 // waitAndSave()

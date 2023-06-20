@@ -5,6 +5,7 @@ import { isAccount } from './solHelper.js';
 import helius from './HeliusService.js'
 import logger from './logger.js'
 import db from './AccountDbService.js'
+// import db from './InMemoryDbService.js'
 import { WELCOME_MESSAGE, PROVIDE_ACCOUNT_MESSAGE_TO_MONITOR, PROVIDE_ACCOUNT_MESSAGE_TO_DELETE, 
   NOT_AN_ACCOUNT_MESSAGE, NO_ACCOUNTS_REGISTERED,
   accountCreatedMessage, accountDeletedMessage, accountAlreadyExists, accountNotExist } from './Texts.js';
@@ -26,10 +27,6 @@ enum ActionType {
 
 class Bot {
   public bot: Telegraf<Scenes.SceneContext<Scenes.SceneSessionData>>
-  // private accountMap = new Map<string, string>();
-  private chatIdToAccountToNameMap = new Map<string, Map<string, string>> 
-  private accountNumber = 0
-  // private senderId = ""
 
   constructor () {
     this.bot = new Telegraf<Scenes.SceneContext>(process.env.TG_BOT_TOKEN);
@@ -90,30 +87,37 @@ class Bot {
           ctx.scene.leave();
           return
         }
-
-        const [accountName, isAdded] = this.saveAccountToMap(pubKey, ctx.message.chat.id)
-        let accountMap = this.chatIdToAccountToNameMap.get(ctx.message.chat.id)
-
-        if (isAdded) {
-          helius.createOrUpdateWebhook(Array.from(accountMap.keys()))
-          logger.info(`added account for chat with Id: ${ctx.message.chat.id}`)
-          ctx.reply(accountCreatedMessage(pubKey, accountName))
-        } else {
-          ctx.reply(accountAlreadyExists(pubKey, accountName));
-        }
+        const [account, isAdded] = db.saveAccount(ctx.message.chat.id, pubKey)
+        db.getAccountsByChatId(ctx.message.chat.id).then(accountMap => {
+          if (isAdded) {
+            accountMap.set(account.pubKey, account.name)
+            helius.createOrUpdateWebhook(Array.from(accountMap.keys()))
+            logger.info(`added account for chat with Id: ${ctx.message.chat.id}`)
+            ctx.reply(accountCreatedMessage(pubKey, account.name))
+          } else {
+            ctx.reply(accountAlreadyExists(pubKey, account.name));
+          }
+        },
+        (e) => {
+          // TODO Handle error
+        })
 
         break; 
       } 
       case ActionType.DELETE: { 
-        const [accountName, isDeleted] = this.deleteAccountFromMap(pubKey, ctx.message.chat.id)
-        let accountMap = this.chatIdToAccountToNameMap.get(ctx.message.chat.id)
-
-        if (isDeleted) {
-          helius.createOrUpdateWebhook(Array.from(accountMap.keys()))
-          ctx.reply(accountDeletedMessage(pubKey, accountName))
-        } else {
-          ctx.reply(accountNotExist(pubKey, accountName));
-        }
+        const [account, isDeleted] = db.deleteAccount(ctx.message.chat.id, pubKey)
+        db.getAccountsByChatId(ctx.message.chat.id).then(accountMap => {
+          if (isDeleted) {
+            accountMap.delete(account.pubKey)
+            helius.createOrUpdateWebhook(Array.from(accountMap.keys()))
+            ctx.reply(accountDeletedMessage(pubKey, account.name))
+          } else {
+            ctx.reply(accountNotExist(pubKey, account.name));
+          }
+        },
+        (e) => {
+          // TODO Handle error
+        })
         break; 
       }
       default: { 
@@ -127,48 +131,20 @@ class Bot {
   }
 
   private listAccounts = (ctx) => {
-    let accountMap = this.chatIdToAccountToNameMap.get(ctx.message.chat.id)
-
-    if (!accountMap || accountMap.size == 0) {
-      ctx.reply(NO_ACCOUNTS_REGISTERED);
-    } else {
-      let accountsStr = ""
-      for (let [key, value] of accountMap) {
-        accountsStr = accountsStr.concat(`${value} : ${key}\n`)
+    db.getAccountsByChatId(ctx.message.chat.id).then((accountToNameMap) => {
+      if (!accountToNameMap || accountToNameMap.size == 0) {
+        ctx.reply(NO_ACCOUNTS_REGISTERED);
+      } else {
+        let accountsStr = ""
+        for (let [key, value] of accountToNameMap) {
+          accountsStr = accountsStr.concat(`${value} : ${key}\n`)
+        }
+        ctx.reply(accountsStr + " ")
       }
-      ctx.reply(accountsStr + " ")
-    }
-  }
-
-  private saveAccountToMap(pubKey: string, chatId: string): [string, boolean] {
-    let accountMap = this.chatIdToAccountToNameMap.get(chatId)
-
-    if (accountMap && accountMap.has(pubKey)) {
-      const accountName = accountMap.get(pubKey)
-      return [accountName, false];
-    }
-
-    if (!accountMap) {
-      accountMap = new Map<string, string>();
-    }
-
-    const accountName = `Account${++this.accountNumber}`
-    accountMap.set(pubKey, accountName)
-    this.chatIdToAccountToNameMap.set(chatId, accountMap)
-    return [accountName, true]
-  }
-
-  private deleteAccountFromMap(pubKey: string, chatId: string): [string, boolean] {
-    let accountMap = this.chatIdToAccountToNameMap.get(chatId)
-
-    if (accountMap && accountMap.has(pubKey)) {
-      const accountName = accountMap.get(pubKey)
-      const isDeleted = accountMap.delete(pubKey)
-      this.chatIdToAccountToNameMap.set(chatId, accountMap)
-      return [accountName, isDeleted];
-    } else {
-      return ["", false]
-    }
+    },
+    (e) => {
+      // TODO Handle error
+    })
   }
 
   private sendMessageToChat(chatId: string, msg: string) {
@@ -177,15 +153,20 @@ class Bot {
 
   public sendAccountUpdateMessage(accountPubKey: string, msg: string) {
     let isMessageSent: boolean = false
-    for (let [chatId, AccountMap] of this.chatIdToAccountToNameMap) { 
-      if (AccountMap.has(accountPubKey)) {
-        this.sendMessageToChat(chatId, msg)
-        isMessageSent = true
-      }
-    } 
-    if (isMessageSent) {
-      logger.debug("Update Sent")
-    }
+    db.getAllAccounts().then((chatIdToAccountToNameMap) => {
+        for (let [chatId, AccountMap] of chatIdToAccountToNameMap) { 
+          if (AccountMap.has(accountPubKey)) {
+            this.sendMessageToChat(chatId, msg)
+            isMessageSent = true
+          }
+        } 
+        if (isMessageSent) {
+          logger.debug("Update Sent")
+        }
+      },
+      (e) => {
+        // TODO Handle error
+      })
   }
 }
 
