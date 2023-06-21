@@ -17,10 +17,14 @@ class App {
     router.post('/webhook', (req, res) => {
       let accountData = req.body[0].accountData
       let description = req.body[0].description
+      let accountPubKeys = req.body[0].instructions[0].accounts
       logger.debug(`request :: ${JSON.stringify(req.body)}`)
       // logger.debug(`request :: ${accountData[0].account}`)
     
-      bot.sendAccountUpdateMessage(accountData[0].account, description)
+      if (accountPubKeys && description) {
+        bot.sendAccountUpdateMessage(accountPubKeys, description)
+      }
+
       res.status(200).send();
       logger.debug('Got webhook!!')
       // res.send(req.body);

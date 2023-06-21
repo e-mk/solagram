@@ -141,18 +141,16 @@ class Bot {
     this.bot.telegram.sendMessage(chatId, msg)
   }
 
-  public sendAccountUpdateMessage(accountPubKey: string, msg: string) {
-    let isMessageSent: boolean = false
+  public sendAccountUpdateMessage(accountPubKeys: string[], msg: string) {
     const chatIdToAccountToNameMap = db.getAllAccounts()
     for (let [chatId, AccountMap] of chatIdToAccountToNameMap) { 
-      if (AccountMap.has(accountPubKey)) {
-        this.sendMessageToChat(chatId, msg)
-        isMessageSent = true
-      }
+      accountPubKeys.forEach(pubkey => {
+        if (AccountMap.has(pubkey)) {
+          logger.debug(`Update Sent to chat with ID : ${chatId}`)
+          this.sendMessageToChat(chatId, msg)
+        }
+      })
     } 
-    if (isMessageSent) {
-      logger.debug("Update Sent")
-    }
   }
 }
 

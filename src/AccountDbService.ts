@@ -72,7 +72,6 @@ class LowDbService implements IDbService {
       let chatId = chatIdWithAccountList.id
       let accountToNameMap = new Map<string, string>
       chatIdWithAccountList.accounts.forEach(account => {
-        logger.debug(`findAllAccounts account: ${account.pubKey}, ${account.name}`)
         accountToNameMap.set(account.pubKey, account.name)
       })
       chatIdToAccountToNameMap.set(chatId, accountToNameMap)
