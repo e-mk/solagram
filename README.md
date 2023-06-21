@@ -2,7 +2,7 @@
 
 Solagram is a telegram bot that enables you to stay up-to-date with the activities happening on the Solana network. By leveraging the capabilities of this bot, you can receive real-time updates and notifications on registered Solana accounts directly on your Telegram chat. [Helius](https://www.helius.dev/) webhooks are used for monitoring Solana network.
 
-You can launch your own bot or use an existing one by adding [SolagramBot](https://t.me/SolagramBot) you your telegram.
+You can launch your own bot or use an existing one by adding [SolagramBot](https://t.me/SolagramBot) to your telegram.
 
 ## Getting Started
 
@@ -13,7 +13,7 @@ You can launch your own bot or use an existing one by adding [SolagramBot](https
     ```
 2. Set up the configuration file:
     
-    > create `.env` file with the following variables:
+    > Create `.env` file with the following variables:
     
     ```dosini
     TG_BOT_TOKEN=<Your Telegram bot token>
@@ -27,14 +27,14 @@ You can launch your own bot or use an existing one by adding [SolagramBot](https
     npm run build
     ```
 4. Run 
-    + in Development environment
-      ```sh
-      npm run dev
-      ```
-    + in Development environment
-      ```sh
-      npm run start
-      ```
+ + in Development environment
+   ```sh
+   npm run dev
+   ```
+ + in Development environment
+   ```sh
+   npm run start
+   ```
 ## Usage
 
 To use the Telegram bot, follow these steps:
