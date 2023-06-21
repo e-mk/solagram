@@ -40,15 +40,16 @@ class LowDbService implements IDbService {
     return dbPath
   }
 
-  public async getAccountsByChatId(chatId: string): Promise<Map<string, string>> {
-    logger.debug(`getAccountsByChatId : ${chatId}`)
-    const chatIdToAccountToNameMap = await this.findAllAccounts()
-    return chatIdToAccountToNameMap.get(chatId)
+  public getAllAccounts(): Map<string, Map<string, string>> {
+    logger.debug(`getAllAccounts`)
+    return this.findAllAccounts()
   }
 
-  public async getAllAccounts(): Promise<Map<string, Map<string, string>>> {
-    logger.debug(`getAllAccounts`)
-    return await this.findAllAccounts()
+  public getAccountsByChatId(chatId: string): Map<string, string> {
+    logger.debug(`getAccountsByChatId : ${chatId}`)
+    const chatIdToAccountToNameMap = this.findAllAccounts()
+    logger.debug(chatIdToAccountToNameMap.size)
+    return chatIdToAccountToNameMap.get(chatId)
   }
 
   public saveAccount(chatId: string, accountPubKey: string): [Account, boolean] {
@@ -65,16 +66,17 @@ class LowDbService implements IDbService {
     return [account, isAdded]
   }
 
-  private async findAllAccounts(): Promise<Map<string, Map<string, string>>> {
-    await this.db.read()
+  private findAllAccounts(): Map<string, Map<string, string>> {
     const chatIdToAccountToNameMap = new Map<string, Map<string, string>>
     this.db.data.chatAccounts.forEach(chatIdWithAccountList => {
       let chatId = chatIdWithAccountList.id
       let accountToNameMap = new Map<string, string>
       chatIdWithAccountList.accounts.forEach(account => {
+        logger.debug(`findAllAccounts account: ${account.pubKey}, ${account.name}`)
         accountToNameMap.set(account.pubKey, account.name)
       })
       chatIdToAccountToNameMap.set(chatId, accountToNameMap)
+      logger.debug(`findAllAccounts chatId: ${chatId}`)
     })
     return chatIdToAccountToNameMap
   }
@@ -82,7 +84,6 @@ class LowDbService implements IDbService {
   private async save(chatAccounts: ChatAccounts) {
     if (this.db && this.db.data) {
       this.db.data.chatAccounts.push(chatAccounts) 
-      console.log(this.db.data)
       await this.db.write()
     } else {
       console.log("No DB Instance")
@@ -90,7 +91,7 @@ class LowDbService implements IDbService {
   }
 
   private saveAccountForChat(chatId: string, pubKey: string): [Account, boolean] {
-    const accountName = `Account ${generateRandomString(5)}`
+    const accountName = `Account_${generateRandomString(5)}`
     let ChatAccounts = this.db.data.chatAccounts.find(chatAccount => chatAccount.id == chatId)
     if (!ChatAccounts) {
       this.db.data.chatAccounts.push({id: chatId, accounts: [{pubKey, name: accountName}]})

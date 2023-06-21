@@ -8,12 +8,12 @@ class InMemoryDb implements IDbService {
   private chatIdToAccountToNameMap = new Map<string, Map<string, string>> 
   private accountNumber = 0
 
-  public getAccountsByChatId(chatId: string): Promise<Map<string, string>>  {
-    return Promise.resolve(this.chatIdToAccountToNameMap.get(chatId));
+  public getAccountsByChatId(chatId: string): Map<string, string>  {
+    return this.chatIdToAccountToNameMap.get(chatId);
   }
 
-  public getAllAccounts(): Promise<Map<string, Map<string, string>>>  {
-    return Promise.resolve(this.chatIdToAccountToNameMap);
+  public getAllAccounts(): Map<string, Map<string, string>>  {
+    return this.chatIdToAccountToNameMap;
   }
 
   public saveAccount(chatId: string, pubKey: string): [Account, boolean] {

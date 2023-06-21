@@ -88,36 +88,30 @@ class Bot {
           return
         }
         const [account, isAdded] = db.saveAccount(ctx.message.chat.id, pubKey)
-        db.getAccountsByChatId(ctx.message.chat.id).then(accountMap => {
-          if (isAdded) {
-            accountMap.set(account.pubKey, account.name)
-            helius.createOrUpdateWebhook(Array.from(accountMap.keys()))
-            logger.info(`added account for chat with Id: ${ctx.message.chat.id}`)
-            ctx.reply(accountCreatedMessage(pubKey, account.name))
-          } else {
-            ctx.reply(accountAlreadyExists(pubKey, account.name));
-          }
-        },
-        (e) => {
-          // TODO Handle error
-        })
+        let accountMap = db.getAccountsByChatId(ctx.message.chat.id)
+        if (isAdded) {
+          logger.debug(`account: ${account.pubKey}, ${account.name}`)
+          logger.debug(accountMap)
+          accountMap.set(account.pubKey, account.name)
+          helius.createOrUpdateWebhook(Array.from(accountMap.keys()))
+          logger.info(`added account for chat with Id: ${ctx.message.chat.id}`)
+          ctx.reply(accountCreatedMessage(pubKey, account.name))
+        } else {
+          ctx.reply(accountAlreadyExists(pubKey, account.name));
+        }
 
         break; 
       } 
       case ActionType.DELETE: { 
         const [account, isDeleted] = db.deleteAccount(ctx.message.chat.id, pubKey)
-        db.getAccountsByChatId(ctx.message.chat.id).then(accountMap => {
-          if (isDeleted) {
-            accountMap.delete(account.pubKey)
-            helius.createOrUpdateWebhook(Array.from(accountMap.keys()))
-            ctx.reply(accountDeletedMessage(pubKey, account.name))
-          } else {
-            ctx.reply(accountNotExist(pubKey, account.name));
-          }
-        },
-        (e) => {
-          // TODO Handle error
-        })
+        let accountMap = db.getAccountsByChatId(ctx.message.chat.id)
+        if (isDeleted) {
+          accountMap.delete(account.pubKey)
+          helius.createOrUpdateWebhook(Array.from(accountMap.keys()))
+          ctx.reply(accountDeletedMessage(pubKey, account.name))
+        } else {
+          ctx.reply(accountNotExist(pubKey, account.name));
+        }
         break; 
       }
       default: { 
@@ -131,20 +125,16 @@ class Bot {
   }
 
   private listAccounts = (ctx) => {
-    db.getAccountsByChatId(ctx.message.chat.id).then((accountToNameMap) => {
-      if (!accountToNameMap || accountToNameMap.size == 0) {
-        ctx.reply(NO_ACCOUNTS_REGISTERED);
-      } else {
-        let accountsStr = ""
-        for (let [key, value] of accountToNameMap) {
-          accountsStr = accountsStr.concat(`${value} : ${key}\n`)
-        }
-        ctx.reply(accountsStr + " ")
+    const accountToNameMap = db.getAccountsByChatId(ctx.message.chat.id)
+    if (!accountToNameMap || accountToNameMap.size == 0) {
+      ctx.reply(NO_ACCOUNTS_REGISTERED);
+    } else {
+      let accountsStr = ""
+      for (let [key, value] of accountToNameMap) {
+        accountsStr = accountsStr.concat(`${value} : ${key}\n`)
       }
-    },
-    (e) => {
-      // TODO Handle error
-    })
+      ctx.reply(accountsStr + " ")
+    }
   }
 
   private sendMessageToChat(chatId: string, msg: string) {
@@ -153,20 +143,16 @@ class Bot {
 
   public sendAccountUpdateMessage(accountPubKey: string, msg: string) {
     let isMessageSent: boolean = false
-    db.getAllAccounts().then((chatIdToAccountToNameMap) => {
-        for (let [chatId, AccountMap] of chatIdToAccountToNameMap) { 
-          if (AccountMap.has(accountPubKey)) {
-            this.sendMessageToChat(chatId, msg)
-            isMessageSent = true
-          }
-        } 
-        if (isMessageSent) {
-          logger.debug("Update Sent")
-        }
-      },
-      (e) => {
-        // TODO Handle error
-      })
+    const chatIdToAccountToNameMap = db.getAllAccounts()
+    for (let [chatId, AccountMap] of chatIdToAccountToNameMap) { 
+      if (AccountMap.has(accountPubKey)) {
+        this.sendMessageToChat(chatId, msg)
+        isMessageSent = true
+      }
+    } 
+    if (isMessageSent) {
+      logger.debug("Update Sent")
+    }
   }
 }
 
