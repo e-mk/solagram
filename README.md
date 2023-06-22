@@ -16,11 +16,12 @@ You can launch your own bot or use an existing one by adding [SolagramBot](https
     > Create `.env` file with the following variables:
     
     ```dosini
-    TG_BOT_TOKEN=<Your Telegram bot token>
-    HELIUS_API_KEY=<Helius API key>
-    HELIUS_WEBHOOK_URL=<Your application API URL to send webhooks>
-    SOLANA_NETWORK=<Solana network to operate in (dev | test | main)>
-    LOG_LEVEL=<Log level>
+    SOLAGRAM_TG_BOT_TOKEN=<Your Telegram bot token>
+    SOLAGRAM_HELIUS_API_KEY=<Helius API key>
+    SOLAGRAM_HELIUS_WEBHOOK_URL=<Your application API URL to send webhooks>
+    SOLAGRAM_SOLANA_NETWORK=<Solana network to operate in (dev | test | main)>
+    SOLAGRAM_LOG_LEVEL=<Log level>
+    SOLAGRAM_DB_PATH=<The path to the db>
     ```
 3. Build
     ```sh

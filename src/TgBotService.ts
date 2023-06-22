@@ -29,7 +29,7 @@ class Bot {
   public bot: Telegraf<Scenes.SceneContext<Scenes.SceneSessionData>>
 
   constructor () {
-    this.bot = new Telegraf<Scenes.SceneContext>(process.env.TG_BOT_TOKEN);
+    this.bot = new Telegraf<Scenes.SceneContext>(process.env.SOLAGRAM_TG_BOT_TOKEN);
     this.initBot()
   }
 

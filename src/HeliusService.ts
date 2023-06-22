@@ -9,15 +9,15 @@ import logger from './logger.js'
 import dotenv from 'dotenv'
 dotenv.config()
 
-const HELIUS_WEBHOOK_URL = `${process.env.HELIUS_WEBHOOK_URL}/webhook`
-const SOLANA_NETWORK = process.env.SOLANA_NETWORK || "dev"
+const HELIUS_WEBHOOK_URL = `${process.env.SOLAGRAM_HELIUS_WEBHOOK_URL}/webhook`
+const SOLANA_NETWORK = process.env.SOLAGRAM_SOLANA_NETWORK || "dev"
 
 class HeliusService {
   private helius: Helius
   private webhookId: string
   
   constructor () {
-    this.helius = new Helius(process.env.HELIUS_API_KEY);
+    this.helius = new Helius(process.env.SOLAGRAM_HELIUS_API_KEY);
   }
 
   public createOrUpdateWebhook(accountAddresses: string[]) {

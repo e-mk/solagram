@@ -7,6 +7,8 @@ import { ChatData , ChatAccounts, Account} from './entity.js';
 import { IDbService } from './IDbService.js';
 import { generateRandomString } from './solHelper.js';
 import logger from './logger.js';
+import dotenv from 'dotenv'
+dotenv.config()
 
 class LowDbService implements IDbService {
   private db: Low<ChatData>;
@@ -17,7 +19,7 @@ class LowDbService implements IDbService {
 
   private async initDb() {
     const __dirname = dirname(fileURLToPath(import.meta.url))
-    const dbPath = __dirname.substring(0, __dirname.lastIndexOf("/") + 1) + '/db';
+    const dbPath = process.env.SOLAGRAM_DB_PATH || __dirname.substring(0, __dirname.lastIndexOf("/") + 1) + '/db';
     const file = join(dbPath, 'db.json')
 
     if (!fs.existsSync(file)) {
