@@ -7,7 +7,7 @@ import logger from './logger.js'
 import db from './AccountDbService.js'
 // import db from './InMemoryDbService.js'
 import { WELCOME_MESSAGE, PROVIDE_ACCOUNT_MESSAGE_TO_MONITOR, PROVIDE_ACCOUNT_MESSAGE_TO_DELETE, 
-  NOT_AN_ACCOUNT_MESSAGE, NO_ACCOUNTS_REGISTERED,
+  NOT_AN_ACCOUNT_MESSAGE, NO_ACCOUNTS_REGISTERED, BULLISH_MESSAGE,
   accountCreatedMessage, accountDeletedMessage, accountAlreadyExists, accountNotExist } from './Texts.js';
 
 
@@ -36,14 +36,14 @@ class Bot {
   private initBot(): void {
     const addAccountScene = new Scenes.BaseScene<Scenes.SceneContext>(ADD_ACCOUNT_SCENE);
     addAccountScene.enter(ctx => ctx.reply(PROVIDE_ACCOUNT_MESSAGE_TO_MONITOR));
-    addAccountScene.leave(ctx => ctx.reply("Done!"));
+    addAccountScene.leave(ctx => ctx.reply(BULLISH_MESSAGE));
     addAccountScene.command("back", leave<Scenes.SceneContext>());
     addAccountScene.on(message('text'), ctx => this.processAccountPubKey(ctx.message.text, ActionType.ADD, ctx));
     addAccountScene.on("message", ctx => ctx.reply(NOT_AN_ACCOUNT_MESSAGE));
     
     const deleteAccountScene = new Scenes.BaseScene<Scenes.SceneContext>(DELETE_ACCOUNT_SCENE);
     deleteAccountScene.enter(ctx => ctx.reply(PROVIDE_ACCOUNT_MESSAGE_TO_DELETE));
-    deleteAccountScene.leave(ctx => ctx.reply("Done!"));
+    deleteAccountScene.leave(ctx => ctx.reply(BULLISH_MESSAGE));
     deleteAccountScene.command("back", leave<Scenes.SceneContext>());
     deleteAccountScene.on(message('text'), ctx => this.processAccountPubKey(ctx.message.text, ActionType.DELETE, ctx));
     deleteAccountScene.on("message", ctx => ctx.reply(NOT_AN_ACCOUNT_MESSAGE));
